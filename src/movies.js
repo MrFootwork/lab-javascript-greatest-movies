@@ -65,4 +65,40 @@ function turnHoursToMinutes(moviesArray) {
 }
 
 // BONUS - Iteration 8: Best yearly score average - Best yearly score average
-function bestYearAvg(moviesArray) {}
+function bestYearAvg(moviesArray) {
+	if (!moviesArray.length) return null;
+
+	const yearsDictionary = [...moviesArray].reduce(
+		(dictionary, { year, score }) => {
+			if (!dictionary[year])
+				return {
+					...dictionary,
+					[year]: [score],
+				};
+
+			return {
+				...dictionary,
+				[year]: [...dictionary[year], score],
+			};
+		},
+		{}
+	); // { 2014: [8.3, 8.6], ... }
+
+	for (let year in yearsDictionary) {
+		yearsDictionary[year] = yearsDictionary[year].reduce(
+			(avg, score, _, scores) => avg + score / scores.length,
+			0
+		);
+	} // { 2014: 8.56377, ... }
+
+	const bestYear = Object.entries(yearsDictionary) // [[ 2014, 8.4 ], [ 2015, 8.65 ], ...]
+		.sort((a, b) => b.year - a.year)
+		.reduce(
+			(max, [year, avgScore]) => {
+				return avgScore > max.avgScore ? { year, avgScore } : max;
+			},
+			{ year: null, avgScore: -Infinity }
+		); // { year: 2014, avgScore: 8.4 }
+
+	return `The best year was ${bestYear.year} with an average score of ${bestYear.avgScore}`;
+}
