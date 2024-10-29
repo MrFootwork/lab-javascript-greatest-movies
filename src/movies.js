@@ -68,35 +68,29 @@ function turnHoursToMinutes(moviesArray) {
 function bestYearAvg(moviesArray) {
 	if (!moviesArray.length) return null;
 
-	const yearsDictionary = [...moviesArray].reduce(
-		(dictionary, { year, score }) => {
-			if (!dictionary[year])
-				return {
-					...dictionary,
-					[year]: [score],
-				};
-
-			return {
-				...dictionary,
-				[year]: [...dictionary[year], score],
-			};
-		},
+	// group array of scores by year
+	const yearsDictionary = moviesArray.reduce(
+		(dictionary, { year, score }) => ({
+			...dictionary,
+			[year]: [...(dictionary[year] || []), score],
+		}),
 		{}
-	); // { 2014: [8.3, 8.6], ... }
+	); // { 2014: [8.3, 8.6, 6.4], ... }
 
-	for (let year in yearsDictionary) {
+	// for each year reduce score arrays to an average score
+	for (const year in yearsDictionary) {
 		yearsDictionary[year] = yearsDictionary[year].reduce(
-			(avg, score, _, scores) => avg + score / scores.length,
+			(avg, score) => avg + score / yearsDictionary[year].length,
 			0
 		);
 	} // { 2014: 8.56377, ... }
 
+	// reduce dictionary to an object holding the target year and average score
 	const bestYear = Object.entries(yearsDictionary) // [[ 2014, 8.4 ], [ 2015, 8.65 ], ...]
-		.sort((a, b) => b.year - a.year)
+		.sort(([yearA, _], [yearB, __]) => yearA - yearB)
 		.reduce(
-			(max, [year, avgScore]) => {
-				return avgScore > max.avgScore ? { year, avgScore } : max;
-			},
+			(best, [year, avgScore]) =>
+				avgScore > best.avgScore ? { year, avgScore } : best,
 			{ year: null, avgScore: -Infinity }
 		); // { year: 2014, avgScore: 8.4 }
 
